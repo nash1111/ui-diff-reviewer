@@ -1,5 +1,16 @@
 import OpenAI from "openai";
+import { z } from "zod";
 import type { AIEvaluation } from "./types";
+
+/**
+ * Zod schema for AI evaluation response with strict validation
+ */
+const AIEvaluationSchema = z.object({
+  summary: z.string().describe("どのような変更が行われたかの自然言語説明"),
+  change_types: z.array(z.string()).describe("変更の種類のリスト（例：追加、削除、内容変更）"),
+  impacted_sections: z.array(z.string()).describe("影響を受けたセクションのリスト（例：header、footer、article）"),
+  likely_intent: z.string().describe("更新の目的や背景の推測"),
+});
 
 /**
  * Initialize Azure OpenAI client
@@ -36,14 +47,6 @@ export async function evaluateDifferences(
 
   const prompt = `
 以下のDOM差分を読んで、ページ更新の意図を要約してください。
-出力は以下のJSON形式で返してください（JSONのみを返し、他の説明は不要です）:
-
-{
-  "summary": "どのような変更が行われたかの自然言語説明",
-  "change_types": ["追加", "削除", "内容変更"],
-  "impacted_sections": ["header", "footer", "article"],
-  "likely_intent": "更新の目的や背景の推測"
-}
 
 DOM差分:
 ${diffDescription}
@@ -64,7 +67,38 @@ ${diffDescription}
         },
       ],
       temperature: 0.3,
-      response_format: { type: "json_object" },
+      response_format: {
+        type: "json_schema",
+        json_schema: {
+          name: "ai_evaluation",
+          strict: true,
+          schema: {
+            type: "object",
+            properties: {
+              summary: {
+                type: "string",
+                description: "どのような変更が行われたかの自然言語説明",
+              },
+              change_types: {
+                type: "array",
+                items: { type: "string" },
+                description: "変更の種類のリスト（例：追加、削除、内容変更）",
+              },
+              impacted_sections: {
+                type: "array",
+                items: { type: "string" },
+                description: "影響を受けたセクションのリスト（例：header、footer、article）",
+              },
+              likely_intent: {
+                type: "string",
+                description: "更新の目的や背景の推測",
+              },
+            },
+            required: ["summary", "change_types", "impacted_sections", "likely_intent"],
+            additionalProperties: false,
+          },
+        },
+      },
     });
 
     const content = response.choices[0]?.message?.content;
@@ -72,8 +106,10 @@ ${diffDescription}
       throw new Error("No response from Azure OpenAI");
     }
 
-    const evaluation: AIEvaluation = JSON.parse(content);
-    return evaluation;
+    // Parse and validate with Zod for extra type safety
+    const parsed = JSON.parse(content);
+    const evaluation = AIEvaluationSchema.parse(parsed);
+    return evaluation as AIEvaluation;
   } catch (error) {
     console.error("Azure OpenAI API error:", error);
     throw new Error(`Failed to evaluate differences: ${error}`);

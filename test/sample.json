@@ -1,0 +1,54 @@
+{
+  "source1": "http://localhost:3000",
+  "source2": "http://localhost:3001",
+  "diff": {
+    "diffs": [
+      {
+        "action": "addElement",
+        "element": "A",
+        "path": "/BODY[1]/HEADER[3]/NAV[5]",
+        "content": "お問い合わせ"
+      },
+      {
+        "action": "addElement",
+        "element": "#text",
+        "path": "/BODY[1]/HEADER[3]/NAV[6]",
+        "content": "\n        "
+      },
+      {
+        "action": "modifyTextElement",
+        "path": "/BODY[3]/MAIN[1]/ARTICLE[3]/P[0]",
+        "oldValue": "新しいサービスを開始しました。",
+        "newValue": "新しいサービスを開始しました。詳細はこちらをご覧ください。"
+      },
+      {
+        "action": "replaceElement",
+        "path": "/BODY[3]/MAIN[3]",
+        "oldValue": "DIV",
+        "newValue": "SECTION"
+      },
+      {
+        "action": "modifyTextElement",
+        "path": "/BODY[5]/FOOTER[1]/P[0]",
+        "oldValue": "© 2024 Sample Company",
+        "newValue": "© 2025 Sample Company"
+      }
+    ],
+    "count": 5,
+    "summary": "+ Added: <A>: \"お問い合わせ\" at /BODY[1]/HEADER[3]/NAV[5]\n+ Added: <#text>: \"\n        \" at /BODY[1]/HEADER[3]/NAV[6]\n~ Modified text: \"新しいサービスを開始しました。\" → \"新しいサービスを開始しました。詳細はこちらをご覧ください。\"\n↔ Replaced <DIV> with <SECTION> at /BODY[3]/MAIN[3]\n~ Modified text: \"© 2024 Sample Company\" → \"© 2025 Sample Company\""
+  },
+  "aiEvaluation": {
+    "summary": "ページにいくつかの変更が加えられ、ナビゲーションリンクの追加、テキストの更新、構造の変更が行われました。",
+    "change_types": [
+      "追加",
+      "テキスト変更",
+      "置換"
+    ],
+    "impacted_sections": [
+      "header",
+      "main",
+      "footer"
+    ],
+    "likely_intent": "訪問者に最新情報を提供し、サイトの構造を改善するため。"
+  }
+}
